@@ -1,0 +1,32 @@
+@model TravelWebApp.Models.Destination
+
+<h2 class="mb-4">Destination Details</h2>
+
+<div class="card shadow">
+    <div class="card-body">
+
+        <h4>@Model.Name</h4>
+        <p><strong>Country:</strong> @Model.Country</p>
+
+        @if (!string.IsNullOrEmpty(Model.Description))
+        {
+        <p><strong>Description:</strong> @Model.Description</p>
+        }
+
+        <p>
+            <strong>Status:</strong>
+            @if (Model.IsActive)
+            {
+            <span class="badge bg-success">Active</span>
+            }
+            else
+            {
+            <span class="badge bg-secondary">Inactive</span>
+            }
+        </p>
+
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
+        <a asp-action="Index" class="btn btn-secondary ms-2">Back</a>
+
+    </div>
+</div>

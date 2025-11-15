@@ -1,0 +1,68 @@
+@model TravelWebApp.Models.Trip
+
+<h2 class="mb-4">Edit Trip</h2>
+
+<form asp-action="Edit" method="post" class="card p-4 shadow-sm">
+
+    <input type="hidden" asp-for="Id" />
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="Title" class="form-label"></label>
+        <input asp-for="Title" class="form-control" />
+        <span asp-validation-for="Title" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="DestinationId" class="form-label"></label>
+        <select asp-for="DestinationId" asp-items="ViewBag.Destinations" class="form-select"></select>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="TransportType" class="form-label"></label>
+        <select asp-for="TransportType" asp-items="ViewBag.TransportTypes" class="form-select"></select>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label asp-for="DepartureDate" class="form-label"></label>
+            <input asp-for="DepartureDate" type="date" class="form-control" />
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <label asp-for="ReturnDate" class="form-label"></label>
+            <input asp-for="ReturnDate" type="date" class="form-control" />
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="PricePerPerson" class="form-label"></label>
+        <input asp-for="PricePerPerson" class="form-control" />
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label asp-for="TotalSeats" class="form-label"></label>
+            <input asp-for="TotalSeats" class="form-control" />
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <label asp-for="AvailableSeats" class="form-label"></label>
+            <input asp-for="AvailableSeats" class="form-control" />
+        </div>
+    </div>
+
+    <div class="form-check mb-3">
+        <input asp-for="IsActive" class="form-check-input" />
+        <label class="form-check-label">Active</label>
+    </div>
+
+    <button type="submit" class="btn btn-success">Save Changes</button>
+    <a asp-action="Index" class="btn btn-secondary ms-2">Cancel</a>
+
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

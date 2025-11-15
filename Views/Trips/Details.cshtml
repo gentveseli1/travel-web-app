@@ -1,0 +1,26 @@
+﻿@model TravelWebApp.Models.Trip
+
+<h2 class="mb-4">Trip Details</h2>
+
+<div class="card shadow">
+    <div class="card-body">
+
+        <h4>@Model.Title</h4>
+
+        <p><strong>Destination:</strong> @Model.Destination?.Name</p>
+        <p><strong>Transport:</strong> @Model.TransportType</p>
+        <p>
+            <strong>Dates:</strong>
+            @Model.DepartureDate.ToShortDateString()
+            →
+            @(Model.ReturnDate?.ToShortDateString() ?? "-")
+        </p>
+        <p><strong>Price:</strong> @Model.PricePerPerson €</p>
+        <p><strong>Seats:</strong> @Model.AvailableSeats / @Model.TotalSeats</p>
+        <p><strong>Status:</strong> @(Model.IsActive ? "Active" : "Inactive")</p>
+
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
+        <a asp-action="Index" class="btn btn-secondary ms-2">Back</a>
+
+    </div>
+</div>

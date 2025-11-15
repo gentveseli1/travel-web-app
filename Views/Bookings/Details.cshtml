@@ -1,0 +1,33 @@
+@model TravelWebApp.Models.Booking
+
+@{
+    ViewData["Title"] = "Booking Details";
+}
+
+<h2 class="mb-4">Booking Details</h2>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+
+        <h4 class="mb-3">@Model.Customer.FullName</h4>
+
+        <p><strong>Trip:</strong> @Model.Trip.Title</p>
+        <p><strong>Booking Date:</strong> @Model.BookingDate.ToString("dd/MM/yyyy HH:mm")</p>
+        <p><strong>Passengers:</strong> @Model.NumberOfPassengers</p>
+        <p><strong>Total Price:</strong> @Model.TotalPrice.ToString("0.00") €</p>
+
+        <p>
+            <strong>Status:</strong>
+            <span class="badge
+                @(Model.Status == BookingStatus.Confirmed ? "bg-success" :
+                  Model.Status == BookingStatus.Cancelled ? "bg-danger" :
+                  "bg-warning")">
+                @Model.Status
+            </span>
+        </p>
+
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
+        <a asp-action="Index" class="btn btn-secondary ms-2">Back</a>
+
+    </div>
+</div>

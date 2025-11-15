@@ -1,0 +1,44 @@
+@model IEnumerable<TravelWebApp.Models.Destination>
+
+    @{
+    ViewData["Title"] = "Destinations";
+    }
+
+    <h2 class="mb-4">Destinations</h2>
+
+    <a asp-action="Create" class="btn btn-primary mb-3">Add Destination</a>
+
+    <table class="table table-bordered table-striped shadow-sm">
+        <thead class="table-dark">
+            <tr>
+                <th>Name</th>
+                <th>Country</th>
+                <th>Active</th>
+                <th style="width:180px;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Name</td>
+                <td>@item.Country</td>
+                <td>
+                    @if(item.IsActive)
+                    {
+                    <span class="badge bg-success">Active</span>
+                    }
+                    else
+                    {
+                    <span class="badge bg-secondary">Inactive</span>
+                    }
+                </td>
+
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm">Edit</a>
+                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger btn-sm ms-2">Delete</a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>

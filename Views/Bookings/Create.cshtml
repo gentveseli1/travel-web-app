@@ -1,0 +1,44 @@
+@model TravelWebApp.Models.Booking
+
+@{
+    ViewData["Title"] = "Create Booking";
+}
+
+<h2 class="mb-4">Create Booking</h2>
+
+<form asp-action="Create" method="post" class="card p-4 shadow-sm">
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="CustomerId" class="form-label"></label>
+        <select asp-for="CustomerId" asp-items="ViewBag.Customers" class="form-select"></select>
+        <span asp-validation-for="CustomerId" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="TripId" class="form-label"></label>
+        <select asp-for="TripId" asp-items="ViewBag.Trips" class="form-select"></select>
+        <span asp-validation-for="TripId" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="NumberOfPassengers" class="form-label"></label>
+        <input asp-for="NumberOfPassengers" class="form-control" />
+        <span asp-validation-for="NumberOfPassengers" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Status" class="form-label"></label>
+        <select asp-for="Status" asp-items="ViewBag.Statuses" class="form-select"></select>
+        <span asp-validation-for="Status" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-success">Create</button>
+    <a asp-action="Index" class="btn btn-secondary ms-2">Cancel</a>
+
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

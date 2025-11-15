@@ -1,0 +1,27 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Build
+bin/
+obj/
+
+# Logs
+*.log
+
+# Config
+appsettings.Development.json
+
+# Dotnet tools cache
+.config/
+
+# Rider / JetBrains
+.idea/
+
+# Database / EF
+*.db
+*.sqlite
+
+# Publish output
+publish/

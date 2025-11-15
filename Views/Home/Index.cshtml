@@ -1,0 +1,21 @@
+@{
+    ViewData["Title"] = "Home";
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <h1 class="mb-3">Welcome to our Travel Agency</h1>
+        <p class="lead">
+            Manage destinations, trips, customers and bookings in one simple web application.
+        </p>
+
+        <div class="mt-4">
+            <a class="btn btn-primary me-2" asp-controller="Trips" asp-action="Index">
+                View Trips
+            </a>
+            <a class="btn btn-outline-primary" asp-controller="Destinations" asp-action="Index">
+                Manage Destinations
+            </a>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,15 @@
+@model TravelWebApp.Models.Destination
+
+<h2 class="text-danger mb-4">Delete Destination</h2>
+
+<div class="alert alert-danger shadow">
+    Are you sure you want to delete the destination
+    <strong>@Model.Name (@Model.Country)</strong>?
+</div>
+
+<form asp-action="Delete">
+    <input type="hidden" asp-for="Id" />
+
+    <button class="btn btn-danger">Delete</button>
+    <a asp-action="Index" class="btn btn-secondary ms-2">Cancel</a>
+</form>

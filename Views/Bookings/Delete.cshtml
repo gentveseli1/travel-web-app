@@ -1,0 +1,29 @@
+@model TravelWebApp.Models.Booking
+
+@{
+    ViewData["Title"] = "Delete Booking";
+}
+
+<h2 class="text-danger mb-4">Delete Booking</h2>
+
+<div class="card shadow-sm border-danger mb-4">
+    <div class="card-body">
+
+        <p class="alert alert-danger">
+            Are you sure you want to delete the booking for
+            <strong>@Model.Customer.FullName</strong>?
+        </p>
+
+        <p><strong>Trip:</strong> @Model.Trip.Title</p>
+        <p><strong>Passengers:</strong> @Model.NumberOfPassengers</p>
+        <p><strong>Total Price:</strong> @Model.TotalPrice.ToString("0.00") €</p>
+
+    </div>
+</div>
+
+<form asp-action="Delete" method="post">
+    <input type="hidden" asp-for="Id" />
+
+    <button class="btn btn-danger">Yes, Delete</button>
+    <a asp-action="Index" class="btn btn-secondary ms-2">Cancel</a>
+</form>

@@ -1,0 +1,42 @@
+@model IEnumerable<TravelWebApp.Models.Trip>
+
+    @{
+    ViewData["Title"] = "Trips";
+    }
+
+    <h2 class="mb-4">Trips</h2>
+
+    <a asp-action="Create" class="btn btn-primary mb-3">Add Trip</a>
+
+    <table class="table table-bordered table-striped shadow-sm">
+        <thead class="table-dark">
+            <tr>
+                <th>Title</th>
+                <th>Destination</th>
+                <th>Departure</th>
+                <th>Return</th>
+                <th>Price (€)</th>
+                <th>Seats</th>
+                <th style="width:220px;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var t in Model)
+        {
+            <tr>
+                <td>@t.Title</td>
+                <td>@t.Destination?.Name</td>
+                <td>@t.DepartureDate.ToShortDateString()</td>
+                <td>@(t.ReturnDate?.ToShortDateString() ?? "-")</td>
+                <td>@t.PricePerPerson</td>
+                <td>@t.AvailableSeats / @t.TotalSeats</td>
+
+                <td>
+                    <a asp-action="Details" asp-route-id="@t.Id" class="btn btn-info btn-sm">Details</a>
+                    <a asp-action="Edit" asp-route-id="@t.Id" class="btn btn-warning btn-sm ms-1">Edit</a>
+                    <a asp-action="Delete" asp-route-id="@t.Id" class="btn btn-danger btn-sm ms-1">Delete</a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
