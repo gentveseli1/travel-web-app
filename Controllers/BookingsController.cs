@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using TravelWebApp.Data;
 using TravelWebApp.Models;
+using QuestPDF.Fluent;
+using QuestPDF.Infrastructure;
 
 namespace TravelWebApp.Controllers
 {
@@ -38,6 +40,14 @@ namespace TravelWebApp.Controllers
             if (ModelState.IsValid)
             {
                 var trip = await _context.Trips.FindAsync(booking.TripId);
+
+                if (trip == null)
+                {
+                    ModelState.AddModelError("TripId", "Selected trip does not exist.");
+                    LoadDropdowns();
+                    return View(booking);
+                }
+
                 booking.TotalPrice = booking.NumberOfPassengers * trip.PricePerPerson;
                 booking.BookingDate = DateTime.UtcNow;
 
@@ -56,7 +66,7 @@ namespace TravelWebApp.Controllers
             if (booking == null)
                 return NotFound();
 
-            LoadDropdowns();
+            LoadDropdowns(booking.CustomerId, booking.TripId, booking.Status);
             return View(booking);
         }
 
@@ -70,18 +80,21 @@ namespace TravelWebApp.Controllers
             if (ModelState.IsValid)
             {
                 var trip = await _context.Trips.FindAsync(booking.TripId);
-                if (trip != null)
+                if (trip == null)
                 {
-                    booking.TotalPrice = booking.NumberOfPassengers * trip.PricePerPerson;
+                    ModelState.AddModelError("TripId", "Selected trip does not exist.");
+                    LoadDropdowns(booking.CustomerId, booking.TripId, booking.Status);
+                    return View(booking);
                 }
+
+                booking.TotalPrice = booking.NumberOfPassengers * trip.PricePerPerson;
 
                 _context.Update(booking);
                 await _context.SaveChangesAsync();
-
                 return RedirectToAction(nameof(Index));
             }
 
-            LoadDropdowns();
+            LoadDropdowns(booking.CustomerId, booking.TripId, booking.Status);
             return View(booking);
         }
 
@@ -89,7 +102,7 @@ namespace TravelWebApp.Controllers
         {
             var booking = await _context.Bookings
                 .Include(b => b.Customer)
-                .Include(b => b.Trip)
+                .Include(b => b.Trip).ThenInclude(t => t.Destination)
                 .FirstOrDefaultAsync(b => b.Id == id);
 
             if (booking == null)
@@ -125,19 +138,34 @@ namespace TravelWebApp.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        public async Task<IActionResult> DownloadPdf(int id)
+        {
+            var booking = await _context.Bookings
+                .Include(b => b.Customer)
+                .Include(b => b.Trip).ThenInclude(t => t.Destination)
+                .FirstOrDefaultAsync(b => b.Id == id);
+
+            if (booking == null)
+                return NotFound();
+
+            var document = new BookingPdfDocument(booking);
+            var pdfBytes = document.GeneratePdf();
+
+            return File(pdfBytes, "application/pdf", $"Booking_{booking.Id}.pdf");
+        }
+
         private void LoadDropdowns(int? customerId = null, int? tripId = null, BookingStatus? status = null)
         {
-            ViewBag.Trips = new SelectList(_context.Trips, "Id", "Title", tripId);
-            ViewBag.Customers = new SelectList(_context.Customers, "Id", "FullName", customerId);
+            ViewBag.Trips = new SelectList(_context.Trips.OrderBy(t => t.Title), "Id", "Title", tripId);
+            ViewBag.Customers = new SelectList(_context.Customers.OrderBy(c => c.FullName), "Id", "FullName", customerId);
 
-            ViewBag.Statuses =
-                Enum.GetValues(typeof(BookingStatus))
+            ViewBag.Statuses = Enum.GetValues(typeof(BookingStatus))
                 .Cast<BookingStatus>()
                 .Select(s => new SelectListItem
                 {
                     Value = ((int)s).ToString(),
                     Text = s.ToString(),
-                    Selected = status.HasValue && status.Value == s
+                    Selected = (status != null && status == s)
                 })
                 .ToList();
         }

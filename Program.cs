@@ -1,9 +1,18 @@
 using Microsoft.EntityFrameworkCore;
 using TravelWebApp.Data;
+using QuestPDF.Infrastructure;
+using TravelWebApp.Filters;
+
+QuestPDF.Settings.License = LicenseType.Community;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add<AuthFilter>();
+});
+
+builder.Services.AddSession();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
@@ -21,6 +30,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+app.UseSession();
 
 app.MapControllerRoute(
     name: "default",

@@ -1,21 +1,165 @@
+@using System.Text.Json
+
 @{
-    ViewData["Title"] = "Home";
+    ViewData["Title"] = "Dashboard";
 }
 
-<div class="row">
-    <div class="col-md-8">
-        <h1 class="mb-3">Welcome to our Travel Agency</h1>
-        <p class="lead">
-            Manage destinations, trips, customers and bookings in one simple web application.
-        </p>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-        <div class="mt-4">
-            <a class="btn btn-primary me-2" asp-controller="Trips" asp-action="Index">
-                View Trips
-            </a>
-            <a class="btn btn-outline-primary" asp-controller="Destinations" asp-action="Index">
-                Manage Destinations
-            </a>
+<h2 class="mb-4">Dashboard Overview</h2>
+
+<div class="row g-4">
+
+    <div class="col-md-3">
+        <div class="card shadow-lg border-0 text-white bg-primary">
+            <div class="card-body">
+                <i class="fa-solid fa-plane fa-2x float-end"></i>
+                <h6>Total Trips</h6>
+                <h2>@ViewBag.TotalTrips</h2>
+            </div>
         </div>
     </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-lg border-0 text-white bg-success">
+            <div class="card-body">
+                <i class="fa-solid fa-users fa-2x float-end"></i>
+                <h6>Total Customers</h6>
+                <h2>@ViewBag.TotalCustomers</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-lg border-0 text-white bg-warning">
+            <div class="card-body">
+                <i class="fa-solid fa-ticket fa-2x float-end"></i>
+                <h6>Total Bookings</h6>
+                <h2>@ViewBag.TotalBookings</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-lg border-0 text-white bg-info">
+            <div class="card-body">
+                <i class="fa-solid fa-check fa-2x float-end"></i>
+                <h6>Active Bookings</h6>
+                <h2>@ViewBag.ActiveBookings</h2>
+            </div>
+        </div>
+    </div>
+
 </div>
+
+<div class="row g-4 mt-4">
+
+    <div class="col-md-8">
+        <div class="card shadow-lg">
+            <div class="card-body">
+                <h5 class="card-title">Revenue Over Time (€)</h5>
+                <canvas id="revenueChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-lg">
+            <div class="card-body">
+                <h5 class="card-title">Top Trips</h5>
+                <ul class="list-group">
+                    @foreach (var t in ViewBag.TopTrips)
+                    {
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>@t.Trip</span>
+                        <span class="badge bg-primary">@t.Count</span>
+                    </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="row g-4 mt-4">
+
+    <div class="col-md-4">
+        <div class="card shadow-lg">
+            <div class="card-body">
+                <h5 class="card-title">Bookings Breakdown</h5>
+                <canvas id="bookingBreakdown"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card shadow-lg">
+            <div class="card-body">
+                <h5 class="card-title">Recent Bookings</h5>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Customer</th>
+                            <th>Trip</th>
+                            <th>Date</th>
+                            <th>Total (€)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var b in ViewBag.RecentBookings)
+                        {
+                        <tr>
+                            <td>@b.Customer.FullName</td>
+                            <td>@b.Trip.Title</td>
+                            <td>@b.BookingDate.ToShortDateString()</td>
+                            <td>@b.TotalPrice €</td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const revenueLabels = @Html.Raw(JsonSerializer.Serialize(
+        ((IEnumerable<dynamic>)ViewBag.RevenueByMonth).Select(x => x.Month)
+    ));
+
+    const revenueValues = @Html.Raw(JsonSerializer.Serialize(
+        ((IEnumerable<dynamic>)ViewBag.RevenueByMonth).Select(x => x.Revenue)
+    ));
+
+    new Chart(document.getElementById('revenueChart'), {
+        type: 'line',
+        data: {
+            labels: revenueLabels,
+            datasets: [{
+                label: 'Revenue (€)',
+                data: revenueValues,
+                borderWidth: 2,
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)'
+            }]
+        }
+    });
+
+    new Chart(document.getElementById('bookingBreakdown'), {
+        type: 'pie',
+        data: {
+            labels: ['Confirmed', 'Cancelled', 'Pending'],
+            datasets: [{
+                data: [
+                    @ViewBag.ActiveBookings,
+                    5,
+                    3
+                ],
+                backgroundColor: ['#28a745', '#dc3545', '#ffc107']
+            }]
+        }
+    });
+</script>
