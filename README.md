@@ -1,17 +1,18 @@
 Travel Web App – ASP.NET MVC
 
 Ky projekt është zhvilluar si pjesë e lëndës Arkitektura e Uebit në Kolegjin AAB, nën udhëheqjen e profesorit Arber Parduzi.
+
 Web aplikacioni shërben si një platformë për një agjension turistik, ku përdoruesit mund të shfletojnë destinacione, ndërsa administratori mund të menaxhojë përmbajtjen përmes panelit të administrimit.
 
 👨‍🎓 Ekipi i Projektit
 
 Ky projekt është realizuar nga tre studentë të Kolegjit AAB:
 
-Gent Veseli
+Gent Veseli gent.veseli@universitetiaab.com
 
-Endi Makolli
+Endi Makolli endi.makolli@universitetiaab.com
 
-Rilind Gashi
+Rilind Gashi rilind8.gashi@universitetiaab.com
 
 📌 Përshkrimi i Projektit
 
@@ -47,7 +48,7 @@ Password: admin132
 
 🛠️ Teknologjitë e Përdorura
 
-ASP.NET MVC 5
+ASP.NET MVC 
 
 Entity Framework
 
