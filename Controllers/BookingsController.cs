@@ -1,75 +1,80 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using TravelWebApp.Data;
 using TravelWebApp.Models;
-using QuestPDF.Fluent;
-using QuestPDF.Infrastructure;
+using TravelWebApp.Repositories;
 
 namespace TravelWebApp.Controllers
 {
     public class BookingsController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IBookingRepository _bookingRepo;
+        private readonly ICustomerRepository _customerRepo;
+        private readonly ITripRepository _tripRepo;
 
-        public BookingsController(ApplicationDbContext context)
+        public BookingsController(
+            IBookingRepository bookingRepo,
+            ICustomerRepository customerRepo,
+            ITripRepository tripRepo)
         {
-            _context = context;
+            _bookingRepo = bookingRepo;
+            _customerRepo = customerRepo;
+            _tripRepo = tripRepo;
         }
 
+        // GET: /Bookings
         public async Task<IActionResult> Index()
         {
-            var bookings = await _context.Bookings
-                .Include(b => b.Customer)
-                .Include(b => b.Trip)
-                .ToListAsync();
-
+            var bookings = await _bookingRepo.GetAllWithIncludesAsync();
             return View(bookings);
         }
 
-        public IActionResult Create()
+        // GET: /Bookings/Create
+        public async Task<IActionResult> Create()
         {
-            LoadDropdowns();
+            await LoadDropdownsAsync();
             return View();
         }
 
+        // POST: /Bookings/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Booking booking)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                var trip = await _context.Trips.FindAsync(booking.TripId);
-
-                if (trip == null)
-                {
-                    ModelState.AddModelError("TripId", "Selected trip does not exist.");
-                    LoadDropdowns();
-                    return View(booking);
-                }
-
-                booking.TotalPrice = booking.NumberOfPassengers * trip.PricePerPerson;
-                booking.BookingDate = DateTime.UtcNow;
-
-                _context.Add(booking);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                await LoadDropdownsAsync();
+                return View(booking);
             }
 
-            LoadDropdowns();
-            return View(booking);
+            var trip = await _tripRepo.GetByIdAsync(booking.TripId);
+            if (trip == null)
+            {
+                ModelState.AddModelError("TripId", "Trip not found.");
+                await LoadDropdownsAsync();
+                return View(booking);
+            }
+
+            booking.TotalPrice = booking.NumberOfPassengers * trip.PricePerPerson;
+            booking.BookingDate = DateTime.UtcNow;
+
+            await _bookingRepo.AddAsync(booking);
+            await _bookingRepo.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
         }
 
+        // GET: /Bookings/Edit/5
         public async Task<IActionResult> Edit(int id)
         {
-            var booking = await _context.Bookings.FindAsync(id);
+            var booking = await _bookingRepo.GetByIdAsync(id);
             if (booking == null)
                 return NotFound();
 
-            LoadDropdowns(booking.CustomerId, booking.TripId, booking.Status);
+            await LoadDropdownsAsync(booking.CustomerId, booking.TripId, booking.Status);
             return View(booking);
         }
 
+        // POST: /Bookings/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Booking booking)
@@ -77,87 +82,69 @@ namespace TravelWebApp.Controllers
             if (id != booking.Id)
                 return NotFound();
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                var trip = await _context.Trips.FindAsync(booking.TripId);
-                if (trip == null)
-                {
-                    ModelState.AddModelError("TripId", "Selected trip does not exist.");
-                    LoadDropdowns(booking.CustomerId, booking.TripId, booking.Status);
-                    return View(booking);
-                }
-
-                booking.TotalPrice = booking.NumberOfPassengers * trip.PricePerPerson;
-
-                _context.Update(booking);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                await LoadDropdownsAsync();
+                return View(booking);
             }
 
-            LoadDropdowns(booking.CustomerId, booking.TripId, booking.Status);
-            return View(booking);
-        }
-
-        public async Task<IActionResult> Details(int id)
-        {
-            var booking = await _context.Bookings
-                .Include(b => b.Customer)
-                .Include(b => b.Trip).ThenInclude(t => t.Destination)
-                .FirstOrDefaultAsync(b => b.Id == id);
-
-            if (booking == null)
-                return NotFound();
-
-            return View(booking);
-        }
-
-        public async Task<IActionResult> Delete(int id)
-        {
-            var booking = await _context.Bookings
-                .Include(b => b.Customer)
-                .Include(b => b.Trip)
-                .FirstOrDefaultAsync(b => b.Id == id);
-
-            if (booking == null)
-                return NotFound();
-
-            return View(booking);
-        }
-
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var booking = await _context.Bookings.FindAsync(id);
-            if (booking != null)
+            var trip = await _tripRepo.GetByIdAsync(booking.TripId);
+            if (trip == null)
             {
-                _context.Bookings.Remove(booking);
-                await _context.SaveChangesAsync();
+                ModelState.AddModelError("TripId", "Trip not found.");
+                await LoadDropdownsAsync();
+                return View(booking);
             }
+
+            booking.TotalPrice = booking.NumberOfPassengers * trip.PricePerPerson;
+
+            await _bookingRepo.UpdateAsync(booking);
+            await _bookingRepo.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }
 
-        public async Task<IActionResult> DownloadPdf(int id)
+        // GET: /Bookings/Details/5
+        public async Task<IActionResult> Details(int id)
         {
-            var booking = await _context.Bookings
-                .Include(b => b.Customer)
-                .Include(b => b.Trip).ThenInclude(t => t.Destination)
-                .FirstOrDefaultAsync(b => b.Id == id);
-
+            var booking = await _bookingRepo.GetByIdWithIncludesAsync(id);
             if (booking == null)
                 return NotFound();
 
-            var document = new BookingPdfDocument(booking);
-            var pdfBytes = document.GeneratePdf();
-
-            return File(pdfBytes, "application/pdf", $"Booking_{booking.Id}.pdf");
+            return View(booking);
         }
 
-        private void LoadDropdowns(int? customerId = null, int? tripId = null, BookingStatus? status = null)
+        // GET: /Bookings/Delete/5
+        public async Task<IActionResult> Delete(int id)
         {
-            ViewBag.Trips = new SelectList(_context.Trips.OrderBy(t => t.Title), "Id", "Title", tripId);
-            ViewBag.Customers = new SelectList(_context.Customers.OrderBy(c => c.FullName), "Id", "FullName", customerId);
+            var booking = await _bookingRepo.GetByIdWithIncludesAsync(id);
+            if (booking == null)
+                return NotFound();
+
+            return View(booking);
+        }
+
+        // POST: /Bookings/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            await _bookingRepo.DeleteAsync(id);
+            await _bookingRepo.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        private async Task LoadDropdownsAsync(
+            int? customerId = null,
+            int? tripId = null,
+            BookingStatus? status = null)
+        {
+            var trips = await _tripRepo.GetAllAsync();
+            var customers = await _customerRepo.GetAllAsync();
+
+            ViewBag.Trips = new SelectList(trips, "Id", "Title", tripId);
+            ViewBag.Customers = new SelectList(customers, "Id", "FullName", customerId);
 
             ViewBag.Statuses = Enum.GetValues(typeof(BookingStatus))
                 .Cast<BookingStatus>()
@@ -165,7 +152,7 @@ namespace TravelWebApp.Controllers
                 {
                     Value = ((int)s).ToString(),
                     Text = s.ToString(),
-                    Selected = (status != null && status == s)
+                    Selected = (status == s)
                 })
                 .ToList();
         }

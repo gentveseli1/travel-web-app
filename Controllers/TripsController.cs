@@ -1,32 +1,30 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using TravelWebApp.Data;
 using TravelWebApp.Models;
+using TravelWebApp.Repositories;
 
 namespace TravelWebApp.Controllers
 {
     public class TripsController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ITripRepository _tripRepo;
+        private readonly IDestinationRepository _destinationRepo;
 
-        public TripsController(ApplicationDbContext context)
+        public TripsController(ITripRepository tripRepo, IDestinationRepository destinationRepo)
         {
-            _context = context;
+            _tripRepo = tripRepo;
+            _destinationRepo = destinationRepo;
         }
 
         public async Task<IActionResult> Index()
         {
-            var trips = await _context.Trips
-                .Include(t => t.Destination)
-                .ToListAsync();
-
+            var trips = await _tripRepo.GetAllAsync();
             return View(trips);
         }
 
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            LoadDropdowns();
+            await LoadDropdownsAsync();
             return View();
         }
 
@@ -35,9 +33,7 @@ namespace TravelWebApp.Controllers
         public async Task<IActionResult> Create(Trip trip)
         {
             if (trip.AvailableSeats == 0)
-            {
                 trip.AvailableSeats = trip.TotalSeats;
-            }
 
             if (trip.AvailableSeats > trip.TotalSeats)
             {
@@ -47,22 +43,23 @@ namespace TravelWebApp.Controllers
 
             if (!ModelState.IsValid)
             {
-                LoadDropdowns();
+                await LoadDropdownsAsync();
                 return View(trip);
             }
 
-            _context.Add(trip);
-            await _context.SaveChangesAsync();
+            await _tripRepo.AddAsync(trip);
+            await _tripRepo.SaveChangesAsync();
+
             return RedirectToAction(nameof(Index));
         }
 
         public async Task<IActionResult> Edit(int id)
         {
-            var trip = await _context.Trips.FindAsync(id);
+            var trip = await _tripRepo.GetByIdAsync(id);
             if (trip == null)
                 return NotFound();
 
-            LoadDropdowns();
+            await LoadDropdownsAsync();
             return View(trip);
         }
 
@@ -73,23 +70,21 @@ namespace TravelWebApp.Controllers
             if (id != trip.Id)
                 return NotFound();
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                _context.Update(trip);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                await LoadDropdownsAsync();
+                return View(trip);
             }
 
-            LoadDropdowns();
-            return View(trip);
+            await _tripRepo.UpdateAsync(trip);
+            await _tripRepo.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
         }
 
         public async Task<IActionResult> Details(int id)
         {
-            var trip = await _context.Trips
-                .Include(t => t.Destination)
-                .FirstOrDefaultAsync(t => t.Id == id);
-
+            var trip = await _tripRepo.GetByIdAsync(id);
             if (trip == null)
                 return NotFound();
 
@@ -98,10 +93,7 @@ namespace TravelWebApp.Controllers
 
         public async Task<IActionResult> Delete(int id)
         {
-            var trip = await _context.Trips
-                .Include(t => t.Destination)
-                .FirstOrDefaultAsync(t => t.Id == id);
-
+            var trip = await _tripRepo.GetByIdAsync(id);
             if (trip == null)
                 return NotFound();
 
@@ -112,19 +104,17 @@ namespace TravelWebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var trip = await _context.Trips.FindAsync(id);
-            if (trip != null)
-            {
-                _context.Trips.Remove(trip);
-                await _context.SaveChangesAsync();
-            }
+            await _tripRepo.DeleteAsync(id);
+            await _tripRepo.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }
 
-        private void LoadDropdowns()
+        private async Task LoadDropdownsAsync()
         {
-            ViewBag.Destinations = new SelectList(_context.Destinations, "Id", "Name");
+            var destinations = await _destinationRepo.GetAllAsync();
+
+            ViewBag.Destinations = new SelectList(destinations, "Id", "Name");
 
             ViewBag.TransportTypes = Enum.GetValues(typeof(TransportType))
                 .Cast<TransportType>()
@@ -135,6 +125,5 @@ namespace TravelWebApp.Controllers
                 })
                 .ToList();
         }
-
     }
 }

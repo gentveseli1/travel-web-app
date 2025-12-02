@@ -1,46 +1,42 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using TravelWebApp.Data;
 using TravelWebApp.Models;
+using TravelWebApp.Repositories;
 
 namespace TravelWebApp.Controllers
 {
     public class CustomersController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ICustomerRepository _repo;
 
-        public CustomersController(ApplicationDbContext context)
+        public CustomersController(ICustomerRepository repo)
         {
-            _context = context;
+            _repo = repo;
         }
 
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Customers.ToListAsync());
+            var customers = await _repo.GetAllAsync();
+            return View(customers);
         }
 
-        public IActionResult Create()
-        {
-            return View();
-        }
+        public IActionResult Create() => View();
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Customer customer)
         {
-            if (ModelState.IsValid)
-            {
-                _context.Add(customer);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
+            if (!ModelState.IsValid)
+                return View(customer);
 
-            return View(customer);
+            await _repo.AddAsync(customer);
+            await _repo.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
         }
 
         public async Task<IActionResult> Edit(int id)
         {
-            var customer = await _context.Customers.FindAsync(id);
+            var customer = await _repo.GetByIdAsync(id);
             if (customer == null)
                 return NotFound();
 
@@ -54,19 +50,18 @@ namespace TravelWebApp.Controllers
             if (id != customer.Id)
                 return NotFound();
 
-            if (ModelState.IsValid)
-            {
-                _context.Update(customer);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
+            if (!ModelState.IsValid)
+                return View(customer);
 
-            return View(customer);
+            await _repo.UpdateAsync(customer);
+            await _repo.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
         }
 
         public async Task<IActionResult> Details(int id)
         {
-            var customer = await _context.Customers.FindAsync(id);
+            var customer = await _repo.GetByIdAsync(id);
             if (customer == null)
                 return NotFound();
 
@@ -75,7 +70,7 @@ namespace TravelWebApp.Controllers
 
         public async Task<IActionResult> Delete(int id)
         {
-            var customer = await _context.Customers.FindAsync(id);
+            var customer = await _repo.GetByIdAsync(id);
             if (customer == null)
                 return NotFound();
 
@@ -86,12 +81,8 @@ namespace TravelWebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var customer = await _context.Customers.FindAsync(id);
-            if (customer != null)
-            {
-                _context.Customers.Remove(customer);
-                await _context.SaveChangesAsync();
-            }
+            await _repo.DeleteAsync(id);
+            await _repo.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }

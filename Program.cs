@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using TravelWebApp.Data;
 using QuestPDF.Infrastructure;
 using TravelWebApp.Filters;
+using TravelWebApp.Repositories;
+using TravelWebApp.Repositories.Implementations;
 
 QuestPDF.Settings.License = LicenseType.Community;
 
@@ -14,9 +16,15 @@ builder.Services.AddControllersWithViews(options =>
 
 builder.Services.AddSession();
 
+builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
-);
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
+builder.Services.AddScoped<IDestinationRepository, DestinationRepository>();
+builder.Services.AddScoped<ITripRepository, TripRepository>();
+builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 
 var app = builder.Build();
 
@@ -32,6 +40,7 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseSession();
+app.UseAuthorization(); 
 
 app.MapControllerRoute(
     name: "default",

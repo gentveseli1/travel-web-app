@@ -1,29 +1,24 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using TravelWebApp.Data;
 using TravelWebApp.Models;
+using TravelWebApp.Repositories;
 
 namespace TravelWebApp.Controllers
 {
     public class DestinationsController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IDestinationRepository _repo;
 
-        public DestinationsController(ApplicationDbContext context)
+        public DestinationsController(IDestinationRepository repo)
         {
-            _context = context;
+            _repo = repo;
         }
 
         public async Task<IActionResult> Index()
         {
-            var items = await _context.Destinations.ToListAsync();
-            return View(items);
+            return View(await _repo.GetAllAsync());
         }
 
-        public IActionResult Create()
-        {
-            return View();
-        }
+        public IActionResult Create() => View();
 
         [HttpPost]
         public async Task<IActionResult> Create(Destination destination)
@@ -31,34 +26,41 @@ namespace TravelWebApp.Controllers
             if (!ModelState.IsValid)
                 return View(destination);
 
-            _context.Add(destination);
-            await _context.SaveChangesAsync();
+            await _repo.AddAsync(destination);
+            await _repo.SaveChangesAsync();
+
             return RedirectToAction(nameof(Index));
         }
 
         public async Task<IActionResult> Edit(int id)
         {
-            var destination = await _context.Destinations.FindAsync(id);
-            if (destination == null) return NotFound();
+            var destination = await _repo.GetByIdAsync(id);
+            if (destination == null)
+                return NotFound();
+
             return View(destination);
         }
 
         [HttpPost]
         public async Task<IActionResult> Edit(int id, Destination destination)
         {
-            if (id != destination.Id) return NotFound();
-            if (!ModelState.IsValid) return View(destination);
+            if (id != destination.Id)
+                return NotFound();
 
-            _context.Update(destination);
-            await _context.SaveChangesAsync();
+            if (!ModelState.IsValid)
+                return View(destination);
+
+            await _repo.UpdateAsync(destination);
+            await _repo.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }
 
         public async Task<IActionResult> Delete(int id)
         {
-            var destination = await _context.Destinations.FindAsync(id);
-            if (destination == null) return NotFound();
+            var destination = await _repo.GetByIdAsync(id);
+            if (destination == null)
+                return NotFound();
 
             return View(destination);
         }
@@ -66,11 +68,8 @@ namespace TravelWebApp.Controllers
         [HttpPost, ActionName("Delete")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var destination = await _context.Destinations.FindAsync(id);
-            if (destination == null) return NotFound();
-
-            _context.Destinations.Remove(destination);
-            await _context.SaveChangesAsync();
+            await _repo.DeleteAsync(id);
+            await _repo.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }
