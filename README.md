@@ -1,112 +1,143 @@
-Travel Web App – ASP.NET MVC
+🌍 Travel Web App – ASP.NET MVC
+Projekt për lëndën Arkitektura e Uebit – Kolegji AAB
 
 Ky projekt është zhvilluar si pjesë e lëndës Arkitektura e Uebit në Kolegjin AAB, nën udhëheqjen e profesorit Arber Parduzi.
 
-Web aplikacioni shërben si një platformë për një agjension turistik, ku përdoruesit mund të shfletojnë destinacione, ndërsa administratori mund të menaxhojë përmbajtjen përmes panelit të administrimit.
+Aplikacioni simulon funksionalitetet e një agjensioni turistik, ku përdoruesit mund të shfletojnë destinacione dhe oferta, ndërsa administratori menaxhon gjithë përmbajtjen.
 
 👨‍🎓 Ekipi i Projektit
+Emri	Email
+Gent Veseli	gent.veseli@universitetiaab.com
 
-Ky projekt është realizuar nga tre studentë të Kolegjit AAB:
+Endi Makolli	endi.makolli@universitetiaab.com
 
-Gent Veseli gent.veseli@universitetiaab.com
-
-Endi Makolli endi.makolli@universitetiaab.com
-
-Rilind Gashi rilind8.gashi@universitetiaab.com
+Rilind Gashi	rilind8.gashi@universitetiaab.com
 
 📌 Përshkrimi i Projektit
 
-Travel Web App është një aplikacion i ndërtuar me ASP.NET MVC, duke përdorur:
+Travel Web App është zhvilluar duke përdorur:
 
-ASP.NET MVC Framework
-
-Entity Framework (Code First / Database First – sipas implementimit tuaj)
-
-SQL Server për menaxhimin e databazës
-
-Razor Views (.cshtml) për pjesën e dizajnit të frontend-it
-
-Bootstrap & CSS për stilizim shtesë
-
-Aplikacioni përfshin funksionalitete si:
-
-Listimi i destinacioneve turistike
-
-Detaje të ofertave
-
-Menaxhim për oferta, destinacione, përdorues etj. (në panelin e adminit)
-
-Login & autentifikim bazik për administratorin
-
-🔑 Kredencialet e Administratorit
-
-Për t’u futur në panelin e administratorit, përdorni kredencialet:
-
-Email: admin@example.com
-
-Password: admin132
-
-🛠️ Teknologjitë e Përdorura
-
-ASP.NET MVC 
+ASP.NET MVC
 
 Entity Framework
 
-SQL Server (MSSQL)
+SQL Server
 
-HTML5 / CSS3 / Bootstrap
+Razor View Engine
 
-C#
+Bootstrap / CSS
 
-Razor (.cshtml)
+Repository Pattern
 
-🚀 Si të startohet projekti
+Session Authentication
 
-Klononi projektin:
+QuestPDF për generim të PDF-ve
 
+Funksionalitetet kryesore:
+
+Menaxhimi i Destinacioneve
+
+Menaxhimi i Udhetimeve (Trips)
+
+Menaxhimi i Klientëve (Customers)
+
+Menaxhimi i Rezervimeve (Bookings)
+
+Login & Autentifikim i Administratorit
+
+Generim PDF për rezervime
+
+🔑 Kredencialet e Administratorit (Seeded User)
+
+Aplikacioni krijon automatikisht një admin kur starton:
+
+Email: admin@test.com
+Password: 123456
+
+🐳 RUN PROJEKTIN ME DOCKER (Recommended)
+
+Projekti ka Dockerfile dhe docker-compose të gatshëm.
+
+1️⃣ Ndërtoni dhe startoni konteinerët
+docker compose up --build
+
+2️⃣ Hap aplikacionin
+
+Në browser shkruaj:
+
+http://localhost:8080
+
+3️⃣ SQL Server është në portin:
+localhost:1433
+
+
+Default credentials:
+
+User: sa
+
+Password: YourStrong!Pass123
+
+📦 Komandat e Docker (të gjitha së bashku)
+Start + Build
+docker compose up --build
+
+Stop & Remove
+docker compose down
+
+Fshi edhe volumet (DB clean)
+docker compose down -v
+
+Shiko log-et e aplikacionit
+docker logs travel-web-app --tail 200
+
+⚙️ Nei që Docker krijon DB dhe admin-in
+
+Në startup ekzekutohet automatikisht:
+
+Migrimet e Entity Framework
+
+Seed user-i admin
+
+Nuk ka nevojë të bëni manualisht update-database.
+
+🖥️ RUN LOKALISHT (pa Docker)
+1️⃣ Klono projektin
 git clone https://github.com/gentveseli1/travel-web-app.git
+cd travel-web-app
 
+2️⃣ Update appsettings.json
+"ConnectionStrings": {
+  "DefaultConnection": "Server=(localdb)\\MSSQLLocalDB;Database=TravelWebAppDb;Trusted_Connection=True;"
+}
 
-Hapeni projektin në Visual Studio.
+3️⃣ Starto migrimet (opsional)
+dotnet ef database update
 
-Rregulloni string-un e lidhjes në appsettings.json ose Web.config (varësisht nga versioni):
+4️⃣ Run aplikacionin
+dotnet watch run
 
-Vendosni emrin e serverit tuaj lokal të SQL Server.
-
-Sigurohuni që databaza ekziston ose përdorni migrimet e Entity Framework.
-
-Bëni run projektin:
-
-Me IIS Express
-
-Ose me Kestrel server (varësisht konfigurimit)
-
-Qasuni admin panelit duke përdorur email-in dhe password-in e mësipërm.
-
-📁 Struktura e Projektit
-
-/Controllers – Controller-at për logjikën e aplikacionit
-
-/Models – Modelet e databazës
-
-/Views – Pamjet cshtml
-
-/wwwroot ose /Content & /Scripts – File statike (CSS, JS, images)
-
-/Migrations – Migrimet e Entity Framework
+📁 Struktura kryesore e Projektit
+/Controllers        → Controller-at
+/Models             → Modelet EF
+/Repositories       → Repository Pattern
+/Views              → Razor Views
+/Data               → DbContext + Seeder
+/Services           → QuestPDF, helper services
+/wwwroot            → CSS, JS, Images
+/Dockerfile         → Build i aplikacionit
+/docker-compose.yml → DB + App Orchestration
 
 🎯 Qëllimi i Projektit
 
-Qëllimi i këtij projekti është të demonstrojë:
+Ky projekt demonstron:
 
-Implementimin e një aplikacioni web me arkitekturë MVC
-
-Përdorimin e Entity Framework për menaxhim të databazës
-
-Organizim profesional të strukturës së një aplikacioni ueb
-
-Puna në ekip dhe ndarja e detyrave në një projekt praktik
+✔ Arkitekturë të pastër MVC
+✔ Përdorimin e Entity Framework
+✔ Implementimin e Repository Pattern
+✔ Punë në grup dhe organizim profesional
+✔ Integrim me Docker dhe SQL Server
+✔ Generim PDF dhe menaxhim rezervimesh
 
 📄 Licenca
 
-Ky projekt është krijuar për qëllime akademike dhe demonstrative.
+Projekti është realizuar për qëllime akademike dhe demonstrative në kuadër të lëndës Arkitektura e Uebit në Kolegjin AAB.
