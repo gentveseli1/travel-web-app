@@ -6,7 +6,8 @@ Ky projekt është zhvilluar si pjesë e lëndës Arkitektura e Uebit në Kolegj
 Aplikacioni simulon funksionalitetet e një agjensioni turistik, ku përdoruesit mund të shfletojnë destinacione dhe oferta, ndërsa administratori menaxhon gjithë përmbajtjen.
 
 👨‍🎓 Ekipi i Projektit
-Emri	Email
+
+
 Gent Veseli	gent.veseli@universitetiaab.com
 
 Endi Makolli	endi.makolli@universitetiaab.com
