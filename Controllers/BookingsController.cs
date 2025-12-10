@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using TravelWebApp.Models;
 using TravelWebApp.Repositories;
+using QuestPDF.Fluent;
 
 namespace TravelWebApp.Controllers
 {
@@ -155,6 +156,20 @@ namespace TravelWebApp.Controllers
                     Selected = (status == s)
                 })
                 .ToList();
+        }
+
+        // GET: /Bookings/DownloadPdf/5
+        [HttpGet]
+        public async Task<IActionResult> DownloadPdf(int id)
+        {
+            var booking = await _bookingRepo.GetByIdWithIncludesAsync(id);
+            if (booking == null)
+                return NotFound();
+
+            var document = new BookingPdfDocument(booking);
+            var pdfBytes = document.GeneratePdf();
+
+            return File(pdfBytes, "application/pdf", $"Booking_{booking.Id}.pdf");
         }
     }
 }

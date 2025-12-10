@@ -14,7 +14,7 @@
         <p><strong>Trip:</strong> @Model.Trip.Title</p>
         <p><strong>Booking Date:</strong> @Model.BookingDate.ToString("dd/MM/yyyy HH:mm")</p>
         <p><strong>Passengers:</strong> @Model.NumberOfPassengers</p>
-        <p><strong>Total Price:</strong> @Model.TotalPrice.ToString("0.00") €</p>
+        <p><strong>Total Price:</strong> @Model.TotalPrice.ToString("0.00") ï¿½</p>
 
         <p>
             <strong>Status:</strong>
@@ -28,9 +28,8 @@
 
         <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
         <a asp-action="Index" class="btn btn-secondary ms-2">Back</a>
-        <a asp-action="DownloadPdf" asp-route-id="@Model.Id" class="btn btn-success ms-2">
+        <a asp-action="DownloadPdf" asp-route-id="@Model.Id" class="btn btn-danger">
             Download PDF
         </a>
-
     </div>
 </div>

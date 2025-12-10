@@ -33,7 +33,11 @@ namespace TravelWebApp.Repositories.Implementations
 
         public async Task<Booking?> GetByIdAsync(int id)
         {
-            return await _context.Bookings.FindAsync(id);
+            return await _context.Bookings
+                .Include(b => b.Customer)
+                .Include(b => b.Trip)
+                    .ThenInclude(t => t.Destination)
+                .FirstOrDefaultAsync(b => b.Id == id);
         }
 
         public async Task AddAsync(Booking booking)

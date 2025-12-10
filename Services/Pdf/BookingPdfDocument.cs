@@ -1,5 +1,4 @@
 ﻿using QuestPDF.Fluent;
-using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 using TravelWebApp.Models;
 
@@ -26,43 +25,63 @@ public class BookingPdfDocument : IDocument
     {
         container.Page(page =>
         {
-            page.Margin(40);   // ✔ margjinat vendosen ketu
+            page.Margin(40);
             page.Header().Element(ComposeHeader);
             page.Content().Element(ComposeContent);
-            page.Footer().AlignCenter().Text("Thank you for booking with us – Travel Web App");
+            page.Footer()
+                .AlignCenter()
+                .Text("Thank you for booking with us – Travel Web App");
         });
     }
 
     void ComposeHeader(IContainer container)
     {
+        var bookingDateText = _booking.BookingDate != default
+            ? _booking.BookingDate.ToString("dd/MM/yyyy HH:mm")
+            : "N/A";
+
         container.Row(row =>
         {
             row.RelativeItem().Column(col =>
             {
                 col.Item().Text("Booking Confirmation").FontSize(20).Bold();
                 col.Item().Text($"Booking ID: {_booking.Id}");
-                col.Item().Text($"Date: {_booking.BookingDate:dd/MM/yyyy HH:mm}");
+                col.Item().Text($"Date: {bookingDateText}");
             });
         });
     }
 
     void ComposeContent(IContainer container)
     {
+        var customer = _booking.Customer;
+        var trip = _booking.Trip;
+
         container.PaddingVertical(20).Column(col =>
         {
+            // ---------------- CUSTOMER ----------------
             col.Item().Text("Customer Information").Bold().FontSize(16);
-            col.Item().Text($"Name: {_booking.Customer.FullName}");
-            col.Item().Text($"Email: {_booking.Customer.Email}");
-            col.Item().Text($"Phone: {_booking.Customer.Phone}");
+            col.Item().Text($"Name: {customer?.FullName ?? "N/A"}");
+            col.Item().Text($"Email: {customer?.Email ?? "N/A"}");
+            col.Item().Text($"Phone: {customer?.Phone ?? "N/A"}");
             col.Item().PaddingTop(15);
 
+            // ---------------- TRIP ----------------
             col.Item().Text("Trip Information").Bold().FontSize(16);
-            col.Item().Text($"Trip: {_booking.Trip.Title}");
-            col.Item().Text($"Destination: {_booking.Trip.Destination?.Name}");
-            col.Item().Text($"Transport: {_booking.Trip.TransportType}");
-            col.Item().Text($"Dates: {_booking.Trip.DepartureDate:dd/MM/yyyy} - {_booking.Trip.ReturnDate?.ToString("dd/MM/yyyy")}");
+            col.Item().Text($"Trip: {trip?.Title ?? "N/A"}");
+            col.Item().Text($"Destination: {trip?.Destination?.Name ?? "N/A"}");
+            col.Item().Text($"Transport: {trip?.TransportType.ToString() ?? "N/A"}");
+
+            string dateRange = "N/A";
+            if (trip != null)
+            {
+                var from = trip.DepartureDate.ToString("dd/MM/yyyy");
+                var to = trip.ReturnDate?.ToString("dd/MM/yyyy") ?? "-";
+                dateRange = $"{from} - {to}";
+            }
+            col.Item().Text($"Dates: {dateRange}");
             col.Item().PaddingTop(15);
 
+            // ---------------- BOOKING DETAILS ----------------
             col.Item().Text("Booking Details").Bold().FontSize(16);
 
             col.Item().Table(table =>
@@ -82,8 +101,17 @@ public class BookingPdfDocument : IDocument
                 });
 
                 table.Cell().Text(_booking.NumberOfPassengers.ToString());
-                table.Cell().Text($"{_booking.Trip.PricePerPerson} €");
-                table.Cell().Text($"{_booking.TotalPrice} €");
+
+                var pricePerPersonText = trip != null
+                    ? $"{trip.PricePerPerson:0.00} €"
+                    : "N/A";
+
+                var totalPriceText = _booking.TotalPrice > 0
+                    ? $"{_booking.TotalPrice:0.00} €"
+                    : "N/A";
+
+                table.Cell().Text(pricePerPersonText);
+                table.Cell().Text(totalPriceText);
             });
         });
     }
